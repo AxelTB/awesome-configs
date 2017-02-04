@@ -73,7 +73,7 @@ local function gen_menu(dock,name,ini,item)
     if menu then return menu end
 
     menu = menu4({parent_geo=geometry})
-    menu:add_item({text="Launch",button1=function() print("exec "..menu.current_item) end})
+    menu:add_item({text="Launch",button1=function() exec(ini) end})
 --     menu:add_item({text="Screen 9",icon=beautiful.path.."Icon/layouts/tileleft.png"})
     if capi.screen.count() > 1 then
         menu:add_item({text="Launch on screen",sub_menu = function()
