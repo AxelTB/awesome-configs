@@ -9,7 +9,7 @@ local gio       = require( "lgi"                      ).Gio
 local wibox     = require( "wibox"                    )
 local beautiful = require( "beautiful"                )
 local shape     = require( "gears.shape"              )
-
+local wirefu    = require("wirefu")
 local capi = {timer=timer}
 
 local full_energy,bat_name,current_status = 0,"",""
@@ -112,13 +112,11 @@ local function check_present(name)
 end
 
 local function timeout(wdg)
-    gio.File.new_for_path('/sys/class/power_supply/'..(bat_name)..'/energy_now'):load_contents_async(nil,function(file,task,c)
-        local content = file:load_contents_finish(task)
-        if content then
-            local now = tonumber(tostring(content))
-            local percent = now/full_energy
-            percent = math.floor(percent* 100)/100
-            wdg:set_value(percent)
+    wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower/devices/DisplayDevice").org.freedesktop.UPower.Device.Percentage:get(function (percentage)
+        print("ENERGY:",percentage)
+        if percentage then
+            local now = tonumber(percentage)/100
+            wdg:set_value(now)
         end
     end)
     gio.File.new_for_path('/sys/class/power_supply/'..(bat_name)..'/status'):load_contents_async(nil,function(file,task,c)
