@@ -9,22 +9,13 @@
 -- add way to call methods after getting a service object
 -- handle signals myservice:connect_signal("foo",function(43534,345) end)
 
-local lgi  = require     'lgi'
-local Gio  = lgi.require 'Gio'
-local core = require     'lgi.core'
-local GLib = lgi.require 'GLib'
-local type,unpack = type,unpack
-
-
---------------
---  OBJECT  --
---------------
---[[
-local function create_object()
-    local obj = {}
-    
-    return obj
-end]]
+local lgi    = require     'lgi'
+local Gio    = lgi.require 'Gio'
+local core   = require     'lgi.core'
+local GLib   = lgi.require 'GLib'
+local client = require("wirefu.client")
+local type = type
+local unpack = unpack or table.unpack -- luacheck: globals unpack (compatibility with Lua 5.1)
 
 --------------
 --  LOGIC   --
@@ -108,12 +99,15 @@ local function register_object(service,name)
     local method_call_guard, method_call_addr = core.marshal.callback(Gio.DBusInterfaceMethodCallFunc ,
     function(conn, sender, path, interface_name,method_name,parameters,invok)
         -- Only call if the method have been defined
+        print("\n\n\nI get here2",method_name)
         if service[method_name] then
             local rets = {service[method_name](service,unpack(parameters.value))}
             local out_sig = service:get_out_signature(interface_name,method_name)
 
             local gvar = GLib.Variant(out_sig,rets)
+            print("CCCCC",invok,out_sig,unpack(rets))
             Gio.DBusMethodInvocation.return_value(invok,gvar)
+            print("RET\n\n\n")
         else
             print("Trying to call "..method_name..[=[ but no implementation was found\n
                 please implement myService:]=]..method_name.."(arg1,arg2)")
@@ -123,8 +117,8 @@ local function register_object(service,name)
     -- Called when there is a property request (get the current value)
     local property_get_guard, property_get_addr = core.marshal.callback(Gio.DBusInterfaceGetPropertyFunc , 
     function(conn, sender, path, interface_name,property_name,parameters,error)
-        local sig = service:get_property_info(interface_name,property_name).signature
         print("I get here")
+        local sig = service:get_property_info(interface_name,property_name).signature
         if service.properties["get_"..property_name] then
             return GLib.Variant(sig,service.properties["get_"..property_name](service))
         else
@@ -156,10 +150,10 @@ local function register_object(service,name)
             }),
             {},  --/* user_data */
             lgi.GObject.Closure(function()
-            print("Closing the object")
+                print("Closing the object")
             end),  --/* user_data_free_func */
             lgi.GObject.Closure(function()
-            print("There was an error")
+                print("There was an error")
             end)
         )
     end
@@ -209,14 +203,14 @@ function module.create_service(iname,xml_introspection)
 
     -- Called when the name is lost
     local name_lost = lgi.GObject.Closure(function(conn, name)
-        print("The name is lost!")
+        print("The name is lost!",name)
     end)
 
 
     -- First, aquire the Session bus
     local owner_id = Gio.bus_own_name(Gio.BusType.SESSION,
     iname,                                   --Interface name
-    Gio.BusNameOwnerFlags.ALLOW_REPLACEMENT, --We want to take control of the existing service
+    Gio.BusNameOwnerFlags.REPLACE, --We want to take control of the existing service
     bus_aquired,                             --Called when the bus is aquired
     name_aquired,                            -- Called when the name is aquired
     name_lost                                -- Called when the name is lost
@@ -225,78 +219,24 @@ function module.create_service(iname,xml_introspection)
     return service
 end
 
+-------------------------------
+--  Name construction gears  --
+-------------------------------
 
 
+-- local function get_connection(path)
+--     g_dbus_connection_new_for_address ()
+-- end
 
 
+module.SESSION = client.create_mt_from_name(  )
+rawset(module.SESSION,"__bus",Gio.BusType.SESSION)
+module.SYSTEM  = client.create_mt_from_name(  )
+rawset(module.SYSTEM,"__bus",Gio.BusType.SYSTEM)
 
-
-
--- Test
-local service = module.create_service("com.example.SampleInterface",[=[ <!DOCTYPE node PUBLIC '-//freedesktop//DTD D-BUS Object Introspection 1.0//EN'
-  'http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd'>
-<node name='/com/example/sample_object'>
-  <interface name='com.example.SampleInterface'>
-    <method name='Frobate'>
-      <arg name='foo' type='i' direction='in'/>
-      <arg name='bar' type='s' direction='out'/>
-      <arg name='baz' type='a{us}' direction='out'/>
-      <!--<annotation name='org.freedesktop.DBus.Deprecated' value='true'/>'-->
-    </method>
-    <method name='Bazify'>
-      <arg name='bar' type='(iiu)' direction='in'/>
-      <arg name='bar' type='v' direction='out'/>
-    </method>
-    <method name='Barify'>
-      <arg name='bar' type='a{ss}' direction='in'/>
-      <arg name='foo' type='i' direction='in'/>
-      <arg name='bar' type='i' direction='out'/>
-    </method>
-    <method name='Mogrify'>
-      <arg name='bar' type='(iiav)' direction='in'/>
-    </method>
-    <signal name='Changed'>
-      <arg name='new_value' type='b'/>
-    </signal>
-    <property name='Bar' type='s' access='readwrite'/>
-    <property name='Bar2' type='s' access='write'/>
-  </interface>
-  <node name='child_of_sample_object'/>
-  <node name='another_child_of_sample_object'/>
-</node>]=])
-
-
-function service:Frobate(integer)
-    print("Frobate",integer)
-    return "123123123",{[12]="234234",[13]="vxcxcvxcv"}
-end
-
-function service:Barify(dict,int)
-    print("Barify",dict.werwer,int)
-    return 12
-end
-
-function service:Bazify ()
-    print("Bazify")
-end
-
-function service:Mogrify()
-    print("Mogrify")
-end
-
-function service.properties.get_Bar(service)
-    print("property getter!")
-    return "foo"
-end
-
-service:register_object("/com/example/SampleInterface/Test")
--- service:register_object("/com/example/SampleInterface/Test2")
-
-
---TODO check if a mainloop and running or start one
-
--- This is a test app, so we start the loop directly
-local main_loop = GLib.MainLoop()
-main_loop:run()
+-- local list = get_bus(module.SESSION.__bus).list_names()
+-- for k,v in pairs(list) do
+--     print("names",k,v)
+-- end
 
 return module
