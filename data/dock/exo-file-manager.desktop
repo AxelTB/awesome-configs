@@ -1,0 +1,11 @@
+Categories=Utility;X-XFCE;X-Xfce-Toplevel;
+Type=Application
+Comment=Browse the file system
+OnlyShowIn=XFCE;
+Class=nautilus
+StartupNotify=true
+Version=1.0
+Name=File Manager
+MimeType=inode/directory;x-scheme-handler/trash;
+Terminal=false
+Exec=exo-open --launch FileManager %u
