@@ -118,7 +118,7 @@ tyrannical.tags = {
         icon        = utils.tools.invertedIconPath("editor.png")     ,
         layout      = awful.layout.suit.tile.bottom                  ,
         class = { 
-            "KWrite"        , "GVim"           , "Emacs"     , "Code::Blocks" , "DDD"               }
+            "KWrite"        , "GVim"           , "Emacs"     , "Code::Blocks" , "DDD", "Gedit"               }
     } ,
     {
         name = "Media",
@@ -128,7 +128,7 @@ tyrannical.tags = {
         layout      = awful.layout.suit.max                          ,
         class = { 
             "Xine"          , "xine Panel"     , "xine*"     , "MPlayer"      , "GMPlayer",
-            "XMMS" }
+            "XMMS", "Rhythmbox" }
     } ,
     {
         name = "Doc",
@@ -140,7 +140,7 @@ tyrannical.tags = {
         force_screen= true                                           ,
         class       = {
             "Assistant"     , "Okular"         , "Evince"    , "EPDFviewer"   , "xpdf",
-            "Xpdf"          ,                                        }
+            "Xpdf"          , "evince-previewer"                                       }
     } ,
 
 
@@ -199,7 +199,7 @@ tyrannical.tags = {
         force_screen= true                                           ,
         icon        = utils.tools.invertedIconPath("media.png")      ,
         layout      = awful.layout.suit.max                          ,
-        class       = {"Amarok"        , "SongBird"       , "last.fm"   ,}
+        class       = {"Amarok"        , "SongBird"       , "last.fm"   , "rhythmbox"}
     } ,
     {
         name        = "Down",
@@ -208,7 +208,7 @@ tyrannical.tags = {
         exclusive   = true                                           ,
         icon        = utils.tools.invertedIconPath("download.png")   ,
         layout      = awful.layout.suit.max                          ,
-        class       = {"Transmission-qt"  , "KGet"}
+        class       = {"Transmission-qt"  , "KGet", "transmission-gtk"}
     } ,
     {
         name        = "Office",
