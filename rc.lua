@@ -36,7 +36,7 @@ local shorter = require( "shorter" )
 -- Theme handling library
 local beautiful = require( "beautiful" )
 local blind     = require( "blind"     )
-
+local personalSettings = require('personal')
 -- Widgets
 local chopped      = require( "chopped"                    )
 local menubar      = require( "menubar"                    )
@@ -709,3 +709,7 @@ shorter.register_section("TYRANNICAL",{
 })
 
 shorter.register_section_text("REPETITIVE","gdfgdfgdfg dsfhg jsdghjsdf gdsfhj gdhj gjgj gjdf ghdjfh gjgdjgdjhg d dhjfg dhfjg dhfj gdhfgj sdhj fg")
+
+
+--{{ Personal setting load
+for i,v in ipairs(personalSettings.runOnce) do utils.run_once(v) end
