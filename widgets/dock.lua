@@ -16,6 +16,7 @@ local appmenu      = require( "customMenu.appmenu"         )
 local fd_async     = require( "utils.fd_async"             )
 local rad_client   = require( "radical.impl.common.client" )
 local capi = { screen = screen }
+local awful = require("awful")
 
 local module={}
 local menu,current_item = nil,nil
@@ -130,7 +131,11 @@ local function gen_menu(dock,name,ini,item)
     end}
     local ib = wibox.widget.imagebox()
     ib:set_image(beautiful.titlebar_close_button_normal)
-    menu:add_item({text="Remove from dock",suffix_widget = ib})
+    menu:add_item({text="Remove from dock",suffix_widget = ib,button1=function()
+      --print("Remove:",require('inspect')(dock._current_item._internal.path))--..awful.util.getdir("config").."data/dock/"..)
+      awful.spawn('rm '..dock._current_item._internal.path)
+      end
+      })
     local imb = wibox.widget.imagebox()
     menu:connect_signal("visible::changed",function(_,visible)
         if not menu.visible and not beautiful.dock_always_show then
