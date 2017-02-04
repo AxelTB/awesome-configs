@@ -120,16 +120,16 @@ beautiful.init(config.themePath                .. "/themeSciFi.lua")
 
 -- This is used later as the default terminal and editor to run.
 local titlebars_enabled = beautiful.titlebar_enabled == nil and true or beautiful.titlebar_enabled
-terminal                = "urxvtc --background-expr 'align 1, 0, pad keep { load \""..os.getenv ( "HOME" ).."/config_files/term_logo.png\"}'"
-editor                  = os.getenv("EDITOR") or "nano"
+terminal                = personalSettings.terminal or "urxvtc --background-expr 'align 1, 0, pad keep { load \""..os.getenv ( "HOME" ).."/config_files/term_logo.png\"}'"
+editor                  = personalSettings.editor or os.getenv("EDITOR") or "nano"
 editor_cmd              = terminal .. " -e " .. editor
 
 -- Default modkey.
-modkey = "Mod4"
+modkey = personalSettings.modkey or "Mod4"
 
 require("awful.layout.dynamic")
 
-awful.layout.layouts = {
+awful.layout.layouts = personalSettings.layouts or {
     awful.layout.suit.tile            ,
     awful.layout.suit.max             ,
     awful.layout.suit.floating        ,
