@@ -46,7 +46,7 @@ local function exec(ini,args)
         ret = ret.." "..previous
     end
 
-    util.spawn(ret,args)
+    awful.spawn(ret,args)
 end
 
 local function add_category(menu,main_category)
