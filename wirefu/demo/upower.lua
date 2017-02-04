@@ -12,5 +12,9 @@ end)
 
 print("async")
 
-local main_loop = GLib.MainLoop()
-main_loop:run()
+
+wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower/devices/DisplayDevice").org.freedesktop.UPower.Device.Energy:get(function (work)
+    print("ENERGY:",work)
+end)
+--local main_loop = GLib.MainLoop()
+--main_loop:run()
