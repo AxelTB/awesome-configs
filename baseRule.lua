@@ -102,7 +102,7 @@ tyrannical.tags = {
     } ,
     {
         name = "Develop",
-     init        = true                                              ,
+        init        = false                                              ,
         exclusive   = true                                           ,
 --                     screen      = {config.scr.pri, config.scr.sec}     ,
         icon        = utils.tools.invertedIconPath("bug.png")        ,
