@@ -73,7 +73,10 @@ local function gen_menu(dock,name,ini,item)
     if menu then return menu end
 
     menu = menu4({parent_geo=geometry})
-    menu:add_item({text="Launch",button1=function() exec(ini) end})
+    menu:add_item({text="Launch",button1=function()
+        exec(ini)
+        menu.hide()
+    end})
 --     menu:add_item({text="Screen 9",icon=beautiful.path.."Icon/layouts/tileleft.png"})
     if capi.screen.count() > 1 then
         menu:add_item({text="Launch on screen",sub_menu = function()
@@ -88,18 +91,14 @@ local function gen_menu(dock,name,ini,item)
     menu:add_item({text="Launch in new tag",button1=function()
         local item = dock._current_item
         if not item then return end
-        local exec = item._internal.ini
-        if not exec then return end
-        exec(exec,{new_tag=true,volatile=true})
-        menu.visible = false
+        exec(ini,{new_tag=true,volatile=true})
+        menu.hide()
     end})
     menu:add_item({text="Launch in current tag",button1=function()
         local item = dock._current_item
         if not item then return end
-        local exec = item._internal.ini
-        if not exec then return end
-        exec(exec,{intrusive=true})
-        menu.visible = false
+        exec(ini,{intrusive=true})
+        menu.hide()
     end})
     menu:add_item({text="Launch In tag", sub_menu = function() return listTags({button1= function(i,m)
         exec(ini,{tag=i._tag})
