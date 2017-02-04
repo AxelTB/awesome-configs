@@ -66,7 +66,7 @@ tyrannical.tags = {
         index       = 1,
 --         max_clients = five_layout,
         class       = {
-            "xterm" , "urxvt" , "aterm","URxvt","XTerm"
+            "xterm" , "urxvt" , "aterm","URxvt","XTerm","Gnome-terminal"
         },
     } ,
     {
@@ -80,7 +80,7 @@ tyrannical.tags = {
         class = {
             "Opera"         , "Firefox"        , "Rekonq"    , "Dillo"        , "Arora",
             "Chromium"      , "nightly"        , "Nightly"   , "minefield"    , "Minefield",
-            "luakit"
+            "luakit"        , "Google-chrome"
         }
     } ,
     {
@@ -95,7 +95,7 @@ tyrannical.tags = {
         max_clients = fair_split_or_tile,
         rotate_shortcut = true,
         shortcut    = { {modkey} , "e" },
-        class  = { 
+        class  = {
             "Thunar"        , "Konqueror"      , "Dolphin"   , "ark"          , "Nautilus",
             "filelight"
         }
@@ -107,7 +107,7 @@ tyrannical.tags = {
 --                     screen      = {config.scr.pri, config.scr.sec}     ,
         icon        = utils.tools.invertedIconPath("bug.png")        ,
         layout      = awful.layout.suit.max                          ,
-        class ={ 
+        class ={
             "Kate"          , "KDevelop"       , "Codeblocks", "Code::Blocks" , "DDD", "kate4"             }
     } ,
     {
@@ -117,7 +117,7 @@ tyrannical.tags = {
 --                     screen      = {config.scr.pri, config.scr.sec}     ,
         icon        = utils.tools.invertedIconPath("editor.png")     ,
         layout      = awful.layout.suit.tile.bottom                  ,
-        class = { 
+        class = {
             "KWrite"        , "GVim"           , "Emacs"     , "Code::Blocks" , "DDD", "Gedit"               }
     } ,
     {
@@ -126,7 +126,7 @@ tyrannical.tags = {
         exclusive   = true                                           ,
         icon        = utils.tools.invertedIconPath("media.png")      ,
         layout      = awful.layout.suit.max                          ,
-        class = { 
+        class = {
             "Xine"          , "xine Panel"     , "xine*"     , "MPlayer"      , "GMPlayer",
             "XMMS", "Rhythmbox" }
     } ,
