@@ -714,4 +714,3 @@ shorter.register_section_text("REPETITIVE","gdfgdfgdfg dsfhg jsdghjsdf gdsfhj gd
 --{{ Personal setting load
 for i,v in ipairs(personalSettings.runOnce) do utils.run_once(v) end
 
-require('wirefu.demo.upower')
