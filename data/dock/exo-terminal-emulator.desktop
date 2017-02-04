@@ -1,0 +1,13 @@
+Categories=Tools;
+Type=Application
+Comment=Use the command line
+OnlyShowIn=XFCE;
+Icon_orig=utilities-terminal
+Class=gnome-terminal
+orig=utilities-terminal
+StartupNotify=true
+Version=1.0
+Exec=exo-open --launch TerminalEmulator
+Terminal=false
+Icon=utilities-terminal
+Name=Terminal Emulator
