@@ -112,6 +112,10 @@ local function check_present(name)
 end
 
 local function timeout(wdg)
+    wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower/devices/DisplayDevice").org.freedesktop.UPower.Device.IsPresent:get(function (present)
+      print("Is Battery Present",present)
+    end)
+
     wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower/devices/DisplayDevice").org.freedesktop.UPower.Device.Percentage:get(function (percentage)
         print("ENERGY:",percentage)
         if percentage then
@@ -119,6 +123,7 @@ local function timeout(wdg)
             wdg:set_value(now)
         end
     end)
+
     gio.File.new_for_path('/sys/class/power_supply/'..(bat_name)..'/status'):load_contents_async(nil,function(file,task,c)
         local content = file:load_contents_finish(task)
         if content then
@@ -136,6 +141,15 @@ local function new(args)
     bat_name = args.name or "BAT0"
     local ib = wibox.widget.base.empty_widget()
 
+    wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower").org.freedesktop.UPower.EnumerateDevices():get(function (present)
+      local data=getmetatable(present)
+      --print("Enumerate:", require('inspect')(data))
+      for i=1,#present do
+              print("------------",present[i])
+              --wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower/devices/"..present[i]).org.freedesktop.UPower.Device.():get(function (present)
+      end
+    end)
+
     if check_present(bat_name) then
 
         -- Check try to load the full energy value
@@ -151,7 +165,7 @@ local function new(args)
         ib.fit=fit
         ib.draw = draw
         ib:set_tooltip("100%")
-        local t = capi.timer({timeout=15})
+        local t = capi.timer({timeout=3})
         t:connect_signal("timeout",function() timeout(ib) end)
         t:start()
         timeout(ib)
