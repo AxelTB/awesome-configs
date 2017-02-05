@@ -24,154 +24,175 @@ end
 local pl = nil
 
 local function init_pl(height)
-    if not pl and height > 0 then
-        local pango_crx = pangocairo.font_map_get_default():create_context()
-        pl = pango.Layout.new(pango_crx)
-        local desc = pango.FontDescription()
-        desc:set_family("Verdana")
-        desc:set_weight(pango.Weight.ULTRABOLD)
-        desc:set_absolute_size((height) * pango.SCALE)
-        pl:set_font_description(desc)
-    end
+  if not pl and height > 0 then
+    local pango_crx = pangocairo.font_map_get_default():create_context()
+    pl = pango.Layout.new(pango_crx)
+    local desc = pango.FontDescription()
+    desc:set_family("Verdana")
+    desc:set_weight(pango.Weight.ULTRABOLD)
+    desc:set_absolute_size((height) * pango.SCALE)
+    pl:set_font_description(desc)
+  end
 end
 
 local function fit(self,context,width,height)
-    if not text_fit then
-        init_pl(height)
+  if not text_fit then
+    init_pl(height)
 
-        if pl then
-            pl.text = " 100%"
-            text_fit = pl:get_pixel_extents().width
-        end
+    if pl then
+      pl.text = " 100%"
+      text_fit = pl:get_pixel_extents().width
     end
+  end
 
-    return (width > (height * 2) and (height * 2) or width) + (text_fit or 0),height
+  return (width > (height * 2) and (height * 2) or width) + (text_fit or 0),height
 end
 
 local function draw_battery(self,context,cr,width,height)
-    cr:set_source(color(self._color or beautiful.fg_normal))
-    cr:set_antialias(0)
-    local width = width - (text_fit or 0)
+  cr:set_source(color(self._color or beautiful.fg_normal))
+  cr:set_antialias(0)
+  local width = width - (text_fit or 0)
 
-    local ratio = height / 7
-    -- The outline
-    cr:set_line_width(ratio)
-    cr:rectangle(0,0,width-1.5*ratio,height)
-    cr:stroke()
+  local ratio = height / 7
+  -- The outline
+  cr:set_line_width(ratio)
+  cr:rectangle(0,0,width-1.5*ratio,height)
+  cr:stroke()
 
-    -- The battery positive pole
-    cr:rectangle(width-1.5*ratio, height/4, 1.5*ratio ,height/2)
+  -- The battery positive pole
+  cr:rectangle(width-1.5*ratio, height/4, 1.5*ratio ,height/2)
 
-    -- The content
-    cr:rectangle(ratio,ratio,(width-3*ratio)*(self._value or 0),height-2*ratio)
-    cr:fill()
+  -- The content
+  cr:rectangle(ratio,ratio,(width-3*ratio)*(self._value or 0),height-2*ratio)
+  cr:fill()
 end
 
 local function draw_plug(self,context,cr,width,height)
 
-    cr:set_source(color(self._color or beautiful.fg_normal))
+  cr:set_source(color(self._color or beautiful.fg_normal))
 
-    cr:arc(height/2, height/2, height/3 , 0, 2*math.pi)
+  cr:arc(height/2, height/2, height/3 , 0, 2*math.pi)
 
-    cr:rectangle(height/2,height/6,5,2*(height/3))
+  cr:rectangle(height/2,height/6,5,2*(height/3))
 
-    cr:rectangle(0, height/2 -1, height/6, 2)
+  cr:rectangle(0, height/2 -1, height/6, 2)
 
-    cr:rectangle(height/2+5, height/4, 3, 2)
-    cr:rectangle(height/2+5, height/2, 3, 2)
+  cr:rectangle(height/2+5, height/4, 3, 2)
+  cr:rectangle(height/2+5, height/2, 3, 2)
 
-    cr:fill()
+  cr:fill()
 end
 
 local function draw(self,w,cr,width,height)
 
-    cr:save()
+  cr:save()
 
-    if current_status == "Discharging\n" then
-        draw_battery(self,w,cr,width,height)
-    else
-        draw_plug(self,w,cr,width,height)
-    end
-    self._tooltip.text = ((self._value or 0)*100)..'%'
-    if pl then
-        pl.text =  " "..((self._value or 0)*100)..'%'
+  if current_status == "Discharging\n" then
+    draw_battery(self,w,cr,width,height)
+  else
+    draw_plug(self,w,cr,width,height)
+  end
+  self._tooltip.text = ((self._value or 0)*100)..'%'
+  if pl then
+    pl.text =  " "..((self._value or 0)*100)..'%'
 
-        cr:translate(width-text_fit,0)
-        cr:show_layout(pl)
-    end
+    cr:translate(width-text_fit,0)
+    cr:show_layout(pl)
+  end
 
-    cr:restore()
+  cr:restore()
 
 
 end
 
 local function check_present(name)
-    local f = io.open('/sys/class/power_supply/'..name..'/present','r')
-    if f then f:close() end
-    return f ~= nil
+  --local f = io.open('/sys/class/power_supply/'..name..'/present','r')
+  --if f then f:close() end
+  --return f ~= nil
+  return true
 end
 
 local function timeout(wdg)
-    wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower/devices/DisplayDevice").org.freedesktop.UPower.Device.IsPresent:get(function (present)
-      print("Is Battery Present",present)
-    end)
+  wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower/devices/DisplayDevice").org.freedesktop.UPower.Device.IsPresent:get(function (present)
+    print("Is Battery Present",present)
+  end)
 
-    wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower/devices/DisplayDevice").org.freedesktop.UPower.Device.Percentage:get(function (percentage)
-        print("ENERGY:",percentage)
-        if percentage then
-            local now = tonumber(percentage)/100
-            wdg:set_value(now)
-        end
-    end)
+  wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower/devices/DisplayDevice").org.freedesktop.UPower.Device.Percentage:get(function (percentage)
+    print("ENERGY:",percentage)
+    if percentage then
+      local now = tonumber(percentage)/100
+      wdg:set_value(now)
+    end
+  end)
 
-    gio.File.new_for_path('/sys/class/power_supply/'..(bat_name)..'/status'):load_contents_async(nil,function(file,task,c)
-        local content = file:load_contents_finish(task)
-        if content then
-            local str = tostring(content)
-            if current_status ~= str then
-            current_status = str
-            wdg:emit_signal("widget::updated")
-            end
+  gio.File.new_for_path('/sys/class/power_supply/'..(bat_name)..'/status'):load_contents_async(nil,function(file,task,c)
+    local content = file:load_contents_finish(task)
+    if content then
+      local str = tostring(content)
+      if current_status ~= str then
+        current_status = str
+        wdg:emit_signal("widget::updated")
+      end
+    end
+  end)
+end
+
+--Asynchronus update function
+local function update()
+  --Search for all devices
+  wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower").org.freedesktop.UPower.EnumerateDevices():get(function (present)
+    local batteryN=0
+    local data=getmetatable(present)
+    --print("Enumerate:", require('inspect')(data))
+    for i=1,#present do
+      batteryN+=1
+      print("------------",present[i])
+      if batteryN == 1 then
+        if(string.find(present[i],"battery")) then
+          temp=string.split(present[i],"/")
+          temp2=string.split(temp[#temp],"_")
+          bat_name=tostring(temp2[#temp2])
+          print("battery found:",bat_name)
+
+          --Update battery Percentage
         end
-    end)
+      end
+      --wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower/devices/"..present[i]).org.freedesktop.UPower.Device.():get(function (present)
+    end
+  end)
 end
 
 local function new(args)
-    local args = args or {}
-    bat_name = args.name or "BAT0"
-    local ib = wibox.widget.base.empty_widget()
+  local args = args or {}
+  bat_name = args.name
+  local ib = wibox.widget.base.empty_widget()
 
-    wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower").org.freedesktop.UPower.EnumerateDevices():get(function (present)
-      local data=getmetatable(present)
-      --print("Enumerate:", require('inspect')(data))
-      for i=1,#present do
-              print("------------",present[i])
-              --wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower/devices/"..present[i]).org.freedesktop.UPower.Device.():get(function (present)
-      end
-    end)
+  --if bat_name == nil then
 
-    if check_present(bat_name) then
+  --end
 
-        -- Check try to load the full energy value
-        gio.File.new_for_path('/sys/class/power_supply/'..(bat_name)..'/energy_full'):load_contents_async(nil,function(file,task,c)
-            local content = file:load_contents_finish(task)
-            if content then
-                full_energy = tonumber(tostring(content))
-            end
-        end)
+  if check_present(bat_name) then
 
-        ib._color = args.fg or args.color
-        ib.set_value = set_value
-        ib.fit=fit
-        ib.draw = draw
-        ib:set_tooltip("100%")
-        local t = capi.timer({timeout=3})
-        t:connect_signal("timeout",function() timeout(ib) end)
-        t:start()
-        timeout(ib)
+    -- Check try to load the full energy value
+    --[[gio.File.new_for_path('/sys/class/power_supply/'..(bat_name)..'/energy_full'):load_contents_async(nil,function(file,task,c)
+    local content = file:load_contents_finish(task)
+    if content then
+    full_energy = tonumber(tostring(content))
+  end
+end)]]--
 
-    end
-    return ib
+ib._color = args.fg or args.color
+ib.set_value = set_value
+ib.fit=fit
+ib.draw = draw
+ib:set_tooltip("100%")
+local t = capi.timer({timeout=3})
+t:connect_signal("timeout",function() timeout(ib) end)
+t:start()
+timeout(ib)
+
+end
+return ib
 end
 
 return setmetatable({}, { __call = function(_, ...) return new(...) end })
