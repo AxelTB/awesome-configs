@@ -30,7 +30,7 @@ shorter.Navigation = {
 
 --     {desc = "",
 --     key={{ modkey, "Shift"   }, "j"     }, fct = function () awful.client.swap.byidx(  1)                      end},
--- 
+--
 --     {desc = "",
 --     key={{ modkey, "Shift"   }, "k"     }, fct = function () awful.client.swap.byidx( -1)                      end},
 
@@ -133,7 +133,18 @@ shorter.Launch = {
 
     {desc = "Run a command",
     key={{  modkey },            "r"},
-        fct = collision.launch
+        fct = function ()
+            awful.prompt.run({ prompt = "Run: ", hooks = hooks},
+            mypromptbox[mouse.screen].widget,
+            function (com)
+                    local result = awful.spawn(com)
+                    if type(result) == "string" then
+                        mypromptbox[mouse.screen].widget:set_text(result)
+                    end
+                    return true
+            end, awful.completion.shell,
+            awful.util.getdir("cache") .. "/history")
+        end
     },
 
     {desc = "",
@@ -243,7 +254,7 @@ for i = 1, 10 do
         fct = function ()
             local screen = mouse.screen
             local tag = screen.tags[i]
-            if tag then     
+            if tag then
                 awful.tag.viewonly(tag)
             end
         end
