@@ -12,7 +12,8 @@ local shape     = require( "gears.shape"              )
 local wirefu    = require("wirefu")
 local capi = {timer=timer}
 
-local full_energy,bat_name,current_status = 0,"",""
+local bat_name,power_plugged,bat_present=nil,false,false
+
 
 local text_fit = nil
 
@@ -87,10 +88,10 @@ local function draw(self,w,cr,width,height)
 
   cr:save()
 
-  if current_status == "Discharging\n" then
-    draw_battery(self,w,cr,width,height)
-  else
+  if power_plugged then
     draw_plug(self,w,cr,width,height)
+  elseif bat_present then
+    draw_battery(self,w,cr,width,height)
   end
   self._tooltip.text = ((self._value or 0)*100)..'%'
   if pl then
@@ -112,9 +113,10 @@ local function check_present(name)
   return true
 end
 
-local function timeout(wdg)
+--[[local function timeout(wdg)
   wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower/devices/DisplayDevice").org.freedesktop.UPower.Device.IsPresent:get(function (present)
     print("Is Battery Present",present)
+
   end)
 
   wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower/devices/DisplayDevice").org.freedesktop.UPower.Device.Percentage:get(function (percentage)
@@ -135,29 +137,41 @@ local function timeout(wdg)
       end
     end
   end)
-end
+end]]--
 
 --Asynchronus update function
-local function update()
+local function update(wdg)
   --Search for all devices
   wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower").org.freedesktop.UPower.EnumerateDevices():get(function (present)
     local batteryN=0
     local data=getmetatable(present)
     --print("Enumerate:", require('inspect')(data))
     for i=1,#present do
-      batteryN+=1
+
       print("------------",present[i])
-      if batteryN == 1 then
-        if(string.find(present[i],"battery")) then
+
+      if(string.find(present[i],"battery")) then
+        batteryN=batteryN+1
+        if batteryN == 1 then
           temp=string.split(present[i],"/")
-          temp2=string.split(temp[#temp],"_")
-          bat_name=tostring(temp2[#temp2])
+          bat_name=temp[#temp]
           print("battery found:",bat_name)
 
+          wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower/devices/"..bat_name).org.freedesktop.UPower.Device.IsPresent:get(function (present)
+            print("Is Battery Present",present)
+            bat_present= present
+            wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower/devices/"..bat_name).org.freedesktop.UPower.Device.Percentage:get(function (percentage)
+              print("ENERGY:",percentage)
+              if percentage then
+                local now = tonumber(percentage)/100
+                wdg:set_value(now)
+                wdg:emit_signal("widget::updated")
+              end
+            end)
+          end)
           --Update battery Percentage
         end
       end
-      --wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower/devices/"..present[i]).org.freedesktop.UPower.Device.():get(function (present)
     end
   end)
 end
@@ -171,14 +185,14 @@ local function new(args)
 
   --end
 
-  if check_present(bat_name) then
+  --if check_present(bat_name) then
 
-    -- Check try to load the full energy value
-    --[[gio.File.new_for_path('/sys/class/power_supply/'..(bat_name)..'/energy_full'):load_contents_async(nil,function(file,task,c)
-    local content = file:load_contents_finish(task)
-    if content then
-    full_energy = tonumber(tostring(content))
-  end
+  -- Check try to load the full energy value
+  --[[gio.File.new_for_path('/sys/class/power_supply/'..(bat_name)..'/energy_full'):load_contents_async(nil,function(file,task,c)
+  local content = file:load_contents_finish(task)
+  if content then
+  full_energy = tonumber(tostring(content))
+end
 end)]]--
 
 ib._color = args.fg or args.color
@@ -186,12 +200,13 @@ ib.set_value = set_value
 ib.fit=fit
 ib.draw = draw
 ib:set_tooltip("100%")
-local t = capi.timer({timeout=3})
-t:connect_signal("timeout",function() timeout(ib) end)
+local t = capi.timer({timeout=5})
+t:connect_signal("timeout",function() update(ib) end)
 t:start()
-timeout(ib)
+update(ib)
+--timeout(ib)
 
-end
+--end
 return ib
 end
 
