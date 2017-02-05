@@ -106,39 +106,6 @@ local function draw(self,w,cr,width,height)
 
 end
 
-local function check_present(name)
-  --local f = io.open('/sys/class/power_supply/'..name..'/present','r')
-  --if f then f:close() end
-  --return f ~= nil
-  return true
-end
-
---[[local function timeout(wdg)
-  wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower/devices/DisplayDevice").org.freedesktop.UPower.Device.IsPresent:get(function (present)
-    print("Is Battery Present",present)
-
-  end)
-
-  wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower/devices/DisplayDevice").org.freedesktop.UPower.Device.Percentage:get(function (percentage)
-    print("ENERGY:",percentage)
-    if percentage then
-      local now = tonumber(percentage)/100
-      wdg:set_value(now)
-    end
-  end)
-
-  gio.File.new_for_path('/sys/class/power_supply/'..(bat_name)..'/status'):load_contents_async(nil,function(file,task,c)
-    local content = file:load_contents_finish(task)
-    if content then
-      local str = tostring(content)
-      if current_status ~= str then
-        current_status = str
-        wdg:emit_signal("widget::updated")
-      end
-    end
-  end)
-end]]--
-
 --Asynchronus update function
 local function update(wdg)
   --Search for all devices
@@ -153,14 +120,14 @@ local function update(wdg)
       if(string.find(present[i],"battery")) then
         batteryN=batteryN+1
         if batteryN == 1 then
-          temp=string.split(present[i],"/")
-          bat_name=temp[#temp]
+          bat_name=present[i]
           print("battery found:",bat_name)
 
-          wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower/devices/"..bat_name).org.freedesktop.UPower.Device.IsPresent:get(function (present)
+          --wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower/devices/"..bat_name).org.freedesktop.UPower.Device.IsPresent:get(function (present)
+          wirefu.SYSTEM.org.freedesktop.UPower(bat_name).org.freedesktop.UPower.Device.IsPresent:get(function (present)
             print("Is Battery Present",present)
             bat_present= present
-            wirefu.SYSTEM.org.freedesktop.UPower("/org/freedesktop/UPower/devices/"..bat_name).org.freedesktop.UPower.Device.Percentage:get(function (percentage)
+            wirefu.SYSTEM.org.freedesktop.UPower(bat_name).org.freedesktop.UPower.Device.Percentage:get(function (percentage)
               print("ENERGY:",percentage)
               if percentage then
                 local now = tonumber(percentage)/100
@@ -171,6 +138,12 @@ local function update(wdg)
           end)
           --Update battery Percentage
         end
+      elseif string.find(present[i],"line_power") then
+        print("Found Power Supply",present[i])
+        wirefu.SYSTEM.org.freedesktop.UPower(present[i]).org.freedesktop.UPower.Device.IsPresent:get(function (present)
+          print("Is Power Present",present)
+          power_plugged=present
+        end)
       end
     end
   end)
