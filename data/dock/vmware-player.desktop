@@ -1,11 +1,12 @@
-[Desktop Entry]
-Encoding=UTF-8
-Name=VMware Player
-Comment=Run a virtual machine
-Exec=/usr/bin/vmplayer %u
-Terminal=false
+Categories=Emulator;
 Type=Application
-Icon=vmware-player
+Comment=Run a virtual machine
+Icon_orig=vmware-player
+Class=vmware player
 StartupNotify=true
-Categories=System;
+Name=VMware Player
 MimeType=application/x-vmware-vm;application/x-vmware-enc-vm;x-scheme-handler/vmrc;
+Encoding=UTF-8
+Exec=/usr/bin/vmplayer %u
+Icon=vmware-player
+Terminal=false
