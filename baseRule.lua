@@ -66,7 +66,7 @@ tyrannical.tags = {
         index       = 1,
 --         max_clients = five_layout,
         class       = {
-            "xterm" , "urxvt" , "aterm","URxvt","XTerm","Gnome-terminal"
+            "xterm" , "urxvt" , "aterm","URxvt","XTerm","Gnome-terminal","Mate-terminal"
         },
     } ,
     {
