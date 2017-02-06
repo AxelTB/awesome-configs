@@ -91,7 +91,7 @@ local function get_in_args(info,method_name,error_callback)
     local ret = {}
     local methodinfo = info:lookup_method(method_name)
     if not methodinfo then
-        error_handler("Cannot get",method_name,"introspection data",error_callback)
+        error_handler("Cannot get"..method_name.."introspection data",error_callback)
         return ret
     end
     for k,v in ipairs(methodinfo.in_args) do
