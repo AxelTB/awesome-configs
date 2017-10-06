@@ -132,7 +132,6 @@ local function gen_menu(dock,name,ini,item)
     local ib = wibox.widget.imagebox()
     ib:set_image(beautiful.titlebar_close_button_normal)
     menu:add_item({text="Remove from dock",suffix_widget = ib,button1=function()
-      --print("Remove:",require('inspect')(dock._current_item._internal.path))--..awful.util.getdir("config").."data/dock/"..)
       awful.spawn('rm '..dock._current_item._internal.path)
       end
       })
