@@ -95,7 +95,7 @@ local function init()
         data.coreN=(coreN+1)
         print("Detected core number: ",data.coreN)
     else
-        print("Unable to load core number")    
+        print("Unable to load core number")
     end
 
     --Refresh all cpu usage widgets (Bar widget,graph and table)
@@ -156,10 +156,10 @@ local function init()
                         govList:add_item {text=gov,button1=function(_menu,item,mods) util.spawn_with_shell('sudo cpufreq-set -c '..cpuN..' -g '..gov) end}
                     else
                         --All cpu together
-                        govList:add_item {text=gov,button1=function(_menu,item,mods) 
+                        govList:add_item {text=gov,button1=function(_menu,item,mods)
                                 for cpuI=0,data.coreN do
                                     --print('sudo cpufreq-set -c '..cpuI..' -g '..gov)
-                                    util.spawn('sudo cpufreq-set -c '..cpuI..' -g '..gov) 
+                                    util.spawn('sudo cpufreq-set -c '..cpuI..' -g '..gov)
                                     govMenu.visible = false
                                 end
                             end}

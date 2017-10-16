@@ -1,7 +1,7 @@
 local awful = require("awful")
 
 return {
-  runOnce={"nm-applet","urxvtd -q -f -o","xscreensaver -nosplash"},
+  runOnce={"nm-applet","urxvtd -q -f -o","xscreensaver -nosplash","skypeforlinux"},
   terminal="mate-terminal",
   -- Random background path
   --backgroundPath = os.getenv("HOME").."/wallpapers/",
