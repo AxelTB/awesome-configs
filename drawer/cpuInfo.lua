@@ -1,3 +1,8 @@
+--- CpuInfo Module for Drawer
+--- Last Edit 2017-10-19 by Axxx
+
+--- Requires: lm-sensors
+
 local setmetatable = setmetatable
 local io           = io
 local ipairs       = ipairs
@@ -30,9 +35,6 @@ local capi = { client = client }
 local cpuInfoModule = {}
 
 --TODO make them private again or remove
---local cpuModel
---local spacer1
-
 local modelWl
 local cpuWidgetArrayL
 local main_table
@@ -53,7 +55,6 @@ local function refreshCoreUsage(widget,content)
             end
         end
     end
-
     --Set bar widget as global usage
     return content[1]
 end
@@ -147,14 +148,14 @@ local function showGovernor()
 end
 
 
---Initialization function
+--Initialization function-------------------------------------------------------
 local function init()
 
     --Load initial data
     print("Load initial data")
-    local cpuModel          = wibox.widget.textbox()
-    local spacer1           = wibox.widget.textbox()
-    cpuInfoModule.volUsage          = wibox.widget.graph()
+    local cpuModel            = wibox.widget.textbox()
+    local spacer1             = wibox.widget.textbox()
+    cpuInfoModule.volUsage    = wibox.widget.graph()
 
     --Evaluate core number------------------
     local pipe0 = io.popen("cat /proc/cpuinfo | grep processor | tail -n1 | grep -e'[0-9]*' -o")
@@ -198,8 +199,6 @@ local function init()
     modelWl         = wibox.layout.fixed.horizontal()
     modelWl:add         ( cpuModel      )
 
-    --loadData()
-
     cpuWidgetArrayL = wibox.container.margin()
     cpuWidgetArrayL:set_margins(3)
     cpuWidgetArrayL:set_bottom(10)
@@ -218,42 +217,16 @@ local function init()
     cpuInfoModule.volUsage:set_scale        ( true                                 )
     cpuInfoModule.volUsage:set_border_color ( beautiful.fg_normal                  )
     cpuInfoModule.volUsage:set_color        ( beautiful.fg_normal                  )
-    --vicious.register          ( cpuInfoModule.volUsage, vicious.widgets.cpu,refreshCoreUsage,1 )
+    vicious.register          ( cpuInfoModule.volUsage, vicious.widgets.cpu,refreshCoreUsage,1 )
     print("Init Ended")
 end
 
 -- Constructor==================================================================
-local function new(margin, args)
+local function new(args)
     --Functions-----------------------------------------------------------------
     --"Public" (Accessible from outside)
     --Toggle visibility (Return visibility)----
-    cpuInfoModule.toggle=function(parent_widget)
-      --Create menu at first load
-            print("Toggle")
-        if not cpuInfoModule.menu then
-            procMenu = embed({max_items=6})
-            init()
 
-            local imb = wibox.widget.imagebox()
-            imb:set_image(beautiful.path .. "Icon/reload.png")
-            --imb:buttons(button({ }, 1, function (geo) cpuInfoModule.refresh() end))
-
-            cpuInfoModule.menu = menu({item_width=198,width=200,arrow_type=radical.base.arrow_type.CENTERED})
-            cpuInfoModule.menu:add_widget(radical.widgets.header(cpuInfoModule.menu,"INFO")  , {height = 20  , width = 200})
-            cpuInfoModule.menu:add_widget(modelWl         , {height = 40  , width = 200})
-            cpuInfoModule.menu:add_widget(radical.widgets.header(cpuInfoModule.menu,"USAGE")   , {height = 20  , width = 200})
-            cpuInfoModule.menu:add_widget(cpuInfoModule.volUsage        , {height = 30  , width = 200})
-            cpuInfoModule.menu:add_widget(cpuWidgetArrayL         , {width = 200})
-            cpuInfoModule.menu:add_widget(radical.widgets.header(cpuInfoModule.menu,"PROCESS",{suffix_widget=imb}) , {height = 20  , width = 200})
-            cpuInfoModule.menu:add_embeded_menu(procMenu)
-        end
-        --If opening refresh
-        if not cpuInfoModule.menu.visible then
-            cpuInfoModule.refresh()
-        end
---         cpuInfoModule.menu.visible = visibility or (not cpuInfoModule.menu.visible)
-        return cpuInfoModule.menu--.visible
-    end
     --------------------------------------------------------------------------
     --Widget definition---------------------------------------------------------
     local rpb = wibox.widget.base.make_widget_declarative {
@@ -276,7 +249,7 @@ local function new(margin, args)
     return rpb
 end
 
---Metodi pubblici
+--Metodi pubblici===============================================================
 cpuInfoModule.refresh=function()
     --Update core(s) temperature
     local pipe0 = io.popen('sensors | grep "Core" | grep -e ": *+[0-9]*" -o| grep -e "[0-9]*" -o')
@@ -288,6 +261,38 @@ cpuInfoModule.refresh=function()
     pipe0:close()
 
     refresh_process()
+end
+
+cpuInfoModule.toggle=function(parent_widget)
+--Create menu at first load
+        print("Toggle")
+        --local bho=os.time()
+        --fd_async.file.watch("/tmp/awesome/cpuCoreUsage"):connect_signal("file::changed",function(content) if (os.time()-bho>1) then print(os.time()) bho=os.clock() end end)
+        --fd_async.exec.command("/home/axxx/.config/awesome/drawer/Scripts/coreUsage"):connect_signal("new::line",function(content) print(content) end)--:connect_signal("request::completed", function(content) print("Completed",content) end)
+        --fd_async.exec.command("find /"):connect_signal("new::line",function(content) print(content) end)--:connect_signal("request::completed", function(content) print("Completed",content) end)
+    if not cpuInfoModule.menu then
+        procMenu = embed({max_items=6})
+        init()
+
+        local imb = wibox.widget.imagebox()
+        imb:set_image(beautiful.path .. "Icon/reload.png")
+        --imb:buttons(button({ }, 1, function (geo) cpuInfoModule.refresh() end))
+
+        cpuInfoModule.menu = menu({item_width=198,width=200,arrow_type=radical.base.arrow_type.CENTERED})
+        cpuInfoModule.menu:add_widget(radical.widgets.header(cpuInfoModule.menu,"INFO")  , {height = 20  , width = 200})
+        cpuInfoModule.menu:add_widget(modelWl         , {height = 40  , width = 200})
+        cpuInfoModule.menu:add_widget(radical.widgets.header(cpuInfoModule.menu,"USAGE")   , {height = 20  , width = 200})
+        cpuInfoModule.menu:add_widget(cpuInfoModule.volUsage        , {height = 30  , width = 200})
+        cpuInfoModule.menu:add_widget(cpuWidgetArrayL         , {width = 200})
+        cpuInfoModule.menu:add_widget(radical.widgets.header(cpuInfoModule.menu,"PROCESS",{suffix_widget=imb}) , {height = 20  , width = 200})
+        cpuInfoModule.menu:add_embeded_menu(procMenu)
+    end
+    --If opening refresh
+    if not cpuInfoModule.menu.visible then
+        cpuInfoModule.refresh()
+    end
+--         cpuInfoModule.menu.visible = visibility or (not cpuInfoModule.menu.visible)
+    return cpuInfoModule.menu--.visible
 end
 
 return setmetatable(cpuInfoModule, { __call = function(_, ...) return new(...) end })

@@ -296,7 +296,7 @@ end
 -- This method should not be confused with awful.util.spawn. This one is
 -- used to retreive the output rather than simply executing a command
 -- and forgetting about it
--- 
+--
 -- @param command a shell command
 -- @param cwd current working directory (optional)
 -- @return A request handler
