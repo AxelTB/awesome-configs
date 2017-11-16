@@ -269,7 +269,7 @@ cpuInfoModule.toggle=function(parent_widget)
 
         local imb = wibox.widget.imagebox()
         imb:set_image(beautiful.path .. "Icon/reload.png")
-        --imb:buttons(button({ }, 1, function (geo) cpuInfoModule.refresh() end))
+        imb:buttons(button({ }, 1, function (geo) cpuInfoModule.refresh() end))
 
         cpuInfoModule.menu = menu({item_width=198,width=200,arrow_type=radical.base.arrow_type.CENTERED})
         cpuInfoModule.menu:add_widget(radical.widgets.header(cpuInfoModule.menu,"INFO")  , {height = 20  , width = 200})
