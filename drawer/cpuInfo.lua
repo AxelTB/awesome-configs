@@ -16,6 +16,7 @@ local config       = require( "forgotten"             )
 local vicious      = require("extern.vicious")
 local menu         = require( "radical.context"       )
 local util         = require( "awful.util"            )
+local awful         = require( "awful"            )
 local wibox        = require( "wibox"                 )
 local themeutils   = require( "blind.common.drawing"  )
 local radtab       = require( "radical.widgets.table" )
@@ -59,24 +60,24 @@ local function refreshCoreUsage(widget,content)
     return content[1]
 end
 
+--Refreshes process list
 local function refresh_process()
-    data.process={}
-
-    --Load process information
+    local process={}
+    --Load process information from script
     fd_async.exec.command(util.getdir("config")..'/drawer/Scripts/topCpu.sh'):connect_signal("new::line",function(content)
 
             if content ~= nil then
-                table.insert(data.process,content:split(","))
+                table.insert(process,content:split(","))
             end
             procMenu:clear()
-            if data.process then
+            if process then
                 local procIcon = {}
                 for k2,v2 in ipairs(capi.client.get()) do
                     if v2.icon then
                         procIcon[v2.class:lower()] = v2.icon
                     end
                 end
-                for i=1,#data.process do
+                for i=1,#process do
                     local wdg = {}
                     wdg.percent       = wibox.widget.textbox()
                     wdg.percent.fit = function()
@@ -96,8 +97,8 @@ local function refresh_process()
                     wdg.kill:set_image(config.iconPath .. "kill.png")
 
                     --Show process and cpu load
-                    wdg.percent:set_text((data.process[i][2] or "N/A").."%")
-                    procMenu:add_item({text=data.process[i][3],suffix_widget=wdg.kill,prefix_widget=wdg.percent})
+                    wdg.percent:set_text((process[i][2] or "N/A").."%")
+                    procMenu:add_item({text=process[i][3],suffix_widget=wdg.kill,prefix_widget=wdg.percent})
                 end
             end
         end)
@@ -106,50 +107,45 @@ end
 -- Generate governor list menu
 local function generateGovernorMenu(cpuN)
     local govLabel
+
+    --Save governor list to avoid recharge
+    local govList = nil
+
     if cpuN ~= nil then govLabel="Set Cpu"..cpuN.." Governor"
     else govLabel="Set global Governor" end
 
     govMenu = menu({arrow_type=radical.base.arrow_type.CENTERED})
     govMenu:add_item {text=govLabel,sub_menu=function()
-            local govList=radical.context{}
+            if govList == nil then
+              govList=radical.context{}
 
-            --Load available governor list
-            local pipe0 = io.popen('cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors')
-            for i,gov in pairs(pipe0:read("*all"):split(" ")) do
-                print("G:",gov)
-                --Generate menu list
-                if cpuN ~= nil then
-                    --Specific Cpu
-                    govList:add_item {text=gov,button1=function(_menu,item,mods) util.spawn_with_shell('sudo cpufreq-set -c '..cpuN..' -g '..gov) end}
-                else
-                    --All cpu together
-                    govList:add_item {text=gov,button1=function(_menu,item,mods)
-                            for cpuI=0,data.coreN do
-                                --print('sudo cpufreq-set -c '..cpuI..' -g '..gov)
-                                util.spawn('sudo cpufreq-set -c '..cpuI..' -g '..gov)
-                                govMenu.visible = false
-                            end
-                        end}
-                    --govList:add_item {text="Performance",button1=function(_menu,item,mods) print("Performances") end}
-                end
+              --Load available governor list
+              local pipe0 = io.popen('cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors')
+              for i,gov in pairs(pipe0:read("*all"):split(" ")) do
+                  print("G:",gov)
+                  --Generate menu list
+                  if gov:len() > 2 then
+                      govList:add_item {text=gov,button1=function(_menu,item,mods)
+                              for cpuI=0,data.coreN-1 do
+                                  print('sudo cpufreq-set -c '..cpuI..' -g '..gov)
+                                  awful.spawn('sudo cpufreq-set -c '..cpuI..' -g '..gov)
+                                  govMenu.visible = false
+                              end
+                          end}
+                    end
+              end
+              pipe0:close()
             end
-            pipe0:close()
-
             return govList
         end
     }
 end
 
-local function showGovernor()
-    if not govMenu then
-        generateGovernorMenu()
-    end
-    govMenu.visible = not govMenu.visible
-end
-
 
 --Initialization function-------------------------------------------------------
 local function init()
+
+    generateGovernorMenu()
 
     --Load initial data
     print("Load initial data")
@@ -177,7 +173,7 @@ local function init()
     local tabHeader={};
     for i=1,data.coreN,1 do
         emptyTable[i]= {"","","",""}
-        tabHeader[i]="C"..(i-1)
+        tabHeader[i]="Core "..(i-1)
     end
     local tab,widgets = radtab(emptyTable,
         {row_height=20,v_header = tabHeader,
@@ -266,10 +262,7 @@ end
 cpuInfoModule.toggle=function(parent_widget)
 --Create menu at first load
         print("Toggle")
-        --local bho=os.time()
-        --fd_async.file.watch("/tmp/awesome/cpuCoreUsage"):connect_signal("file::changed",function(content) if (os.time()-bho>1) then print(os.time()) bho=os.clock() end end)
-        --fd_async.exec.command("/home/axxx/.config/awesome/drawer/Scripts/coreUsage"):connect_signal("new::line",function(content) print(content) end)--:connect_signal("request::completed", function(content) print("Completed",content) end)
-        --fd_async.exec.command("find /"):connect_signal("new::line",function(content) print(content) end)--:connect_signal("request::completed", function(content) print("Completed",content) end)
+
     if not cpuInfoModule.menu then
         procMenu = embed({max_items=6})
         init()
@@ -286,6 +279,7 @@ cpuInfoModule.toggle=function(parent_widget)
         cpuInfoModule.menu:add_widget(cpuWidgetArrayL         , {width = 200})
         cpuInfoModule.menu:add_widget(radical.widgets.header(cpuInfoModule.menu,"PROCESS",{suffix_widget=imb}) , {height = 20  , width = 200})
         cpuInfoModule.menu:add_embeded_menu(procMenu)
+        cpuInfoModule.menu:add_embeded_menu(govMenu)
     end
     --If opening refresh
     if not cpuInfoModule.menu.visible then
