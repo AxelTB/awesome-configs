@@ -105,7 +105,7 @@ local function refresh_process()
       end
     end
   end)
-  topCpu:connect_signal("request::complete",function() print("TopCpu Complete") end )
+  topCpu:connect_signal("request::completed",function() print("TopCpu Complete") end )
 end
 
 -- Generate governor list menu
@@ -123,7 +123,7 @@ local function generateGovernorMenu(cpuN)
     if govList == nil then
       govList=radical.context{}
 
-      fd_async.file.load('/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors'):connect_signal('request::complete',function(content)
+      fd_async.file.load('/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors'):connect_signal('request::completed',function(content)
         for i,gov in pairs(content:split(" ")) do
           print("G:",gov)
           --Generate menu list
@@ -200,24 +200,27 @@ local function init()
   cpuWidgetArrayL:set_widget(tab)
 
   --Load Cpu model
-  local pipeIn = io.popen('cat /proc/cpuinfo | grep "model name" | cut -d ":" -f2 | head -n 1',"r")
-  local cpuName = pipeIn:read("*all") or "N/A"
-  pipeIn:close()
-
-  cpuModel:set_text(cpuName)
+  --local pipeIn = io.popen('cat /proc/cpuinfo | grep "model name" | cut -d ":" -f2 | head -n 1',"r")
+  --local cpuName = pipeIn:read("*all") or "N/A"
+  --pipeIn:close()
+  cpuModel:set_text("Loading...")
+  fd_async.exec.command(util.getdir("config")..'/drawer/Scripts/cpuName.sh'):connect_signal('request::completed',function(content)
+      cpuModel:set_text(content)
+      print ("CPU Name:",content)
+  end)
   cpuModel.width     = 212
 
-cpuInfoModule.volUsage:set_width        ( 212                                  )
-cpuInfoModule.volUsage:set_height       ( 30                                   )
-cpuInfoModule.volUsage:set_scale        ( true                                 )
-cpuInfoModule.volUsage:set_border_color ( beautiful.fg_normal                  )
-cpuInfoModule.volUsage:set_color        ( beautiful.fg_normal                  )
-vicious.register          ( cpuInfoModule.volUsage, vicious.widgets.cpu,refreshCoreUsage,1 )
+  cpuInfoModule.volUsage:set_width        ( 212                                  )
+  cpuInfoModule.volUsage:set_height       ( 30                                   )
+  cpuInfoModule.volUsage:set_scale        ( true                                 )
+  cpuInfoModule.volUsage:set_border_color ( beautiful.fg_normal                  )
+  cpuInfoModule.volUsage:set_color        ( beautiful.fg_normal                  )
+  vicious.register( cpuInfoModule.volUsage, vicious.widgets.cpu,refreshCoreUsage,1 )
 
---Generate governor list
-generateGovernorMenu()
+  --Generate governor list
+  generateGovernorMenu()
 
-print("Init Ended")
+  print("Init Ended")
 end
 
 -- Constructor==================================================================
