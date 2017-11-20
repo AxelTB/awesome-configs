@@ -144,12 +144,12 @@ end
 
 
 --Initialization function-------------------------------------------------------
+--Executed on first menu open
 local function init()
-  generateGovernorMenu()
-
-
   --Load initial data
   print("Load initial data")
+
+  --Create menu content
   local cpuModel            = wibox.widget.textbox()
   local spacer1             = wibox.widget.textbox()
   cpuInfoModule.volUsage    = wibox.widget.graph()
@@ -161,14 +161,12 @@ local function init()
 
   if coreN then
     data.coreN=(coreN+1)
-    print("Detected core number: ",data.coreN)
+    --print("Detected core number: ",data.coreN)
   else
-    print("Unable to load core number")
+    print("CpuInfo Error: Unable to load core number")
   end
 
-  --Constructor
-
-
+  --Create CPUs Table
   topCpuW           = {}
   local emptyTable={};
   local tabHeader={};
@@ -177,37 +175,37 @@ local function init()
     tabHeader[i]="Core "..(i-1)
   end
   local tab,widgets = radtab(emptyTable,
-  {row_height=20,v_header = tabHeader,
-  h_header = {"GHz","Used %","Temp","Governor"}
-})
-main_table = widgets
+    {row_height=20,v_header = tabHeader,
+    h_header = {"GHz","Used %","Temp","Governor"}
+  })
+  main_table = widgets --Needed for some unknown reason
 
---Single core load
 
---Register cell table as vicious widgets
-for i=0, (data.coreN-1) do
-  --Cpu Speed (Frequency in Ghz
-  vicious.register(main_table[i+1][1], vicious.widgets.cpuinf,    function (widget, args)
-    return string.format("%.2f", args['{cpu'..i..' ghz}'])
-  end,2)
+  --Register cell table as vicious widgets
+  for i=0, (data.coreN-1) do
+    --Cpu Speed (Frequency in Ghz
+    vicious.register(main_table[i+1][1], vicious.widgets.cpuinf,    function (widget, args)
+      return string.format("%.2f", args['{cpu'..i..' ghz}'])
+    end,2)
   --Governor
   vicious.register(main_table[i+1][4], vicious.widgets.cpufreq,'$5',5,"cpu"..i)
-end
-modelWl         = wibox.layout.fixed.horizontal()
-modelWl:add         ( cpuModel      )
+  end
 
-cpuWidgetArrayL = wibox.container.margin()
-cpuWidgetArrayL:set_margins(3)
-cpuWidgetArrayL:set_bottom(10)
-cpuWidgetArrayL:set_widget(tab)
+  --Create menu structure
+  modelWl = wibox.layout.fixed.horizontal()
+  modelWl:add(cpuModel)
+  cpuWidgetArrayL = wibox.container.margin()
+  cpuWidgetArrayL:set_margins(3)
+  cpuWidgetArrayL:set_bottom(10)
+  cpuWidgetArrayL:set_widget(tab)
 
---Load Cpu model
-local pipeIn = io.popen('cat /proc/cpuinfo | grep "model name" | cut -d ":" -f2 | head -n 1',"r")
-local cpuName = pipeIn:read("*all") or "N/A"
-pipeIn:close()
+  --Load Cpu model
+  local pipeIn = io.popen('cat /proc/cpuinfo | grep "model name" | cut -d ":" -f2 | head -n 1',"r")
+  local cpuName = pipeIn:read("*all") or "N/A"
+  pipeIn:close()
 
-cpuModel:set_text(cpuName)
-cpuModel.width     = 212
+  cpuModel:set_text(cpuName)
+  cpuModel.width     = 212
 
 cpuInfoModule.volUsage:set_width        ( 212                                  )
 cpuInfoModule.volUsage:set_height       ( 30                                   )
@@ -215,6 +213,10 @@ cpuInfoModule.volUsage:set_scale        ( true                                 )
 cpuInfoModule.volUsage:set_border_color ( beautiful.fg_normal                  )
 cpuInfoModule.volUsage:set_color        ( beautiful.fg_normal                  )
 vicious.register          ( cpuInfoModule.volUsage, vicious.widgets.cpu,refreshCoreUsage,1 )
+
+--Generate governor list
+generateGovernorMenu()
+
 print("Init Ended")
 end
 
