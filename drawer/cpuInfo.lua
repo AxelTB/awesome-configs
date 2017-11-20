@@ -2,7 +2,9 @@
 --- Last Edit 2017-10-19 by Axxx
 
 --- Requires: lm-sensors
-
+--- TODO:
+--- 9: Fix topCpu core usage
+--- 5: Close governor menu when cpuInfo closed
 local setmetatable = setmetatable
 local io           = io
 local ipairs       = ipairs
@@ -108,38 +110,37 @@ local function refresh_process()
   topCpu:connect_signal("request::completed",function() print("TopCpu Complete") end )
 end
 
+--Save governor list to avoid recharge
+local govList = nil
+
 -- Generate governor list menu
 local function generateGovernorMenu(cpuN)
   local govLabel
 
-  --Save governor list to avoid recharge
-  local govList = nil
-
   if cpuN ~= nil then govLabel="Set Cpu"..cpuN.." Governor"
   else govLabel="Set global Governor" end
 
+  if govList == nil then
+    govList=radical.context{}
 
-  govMenu:add_item {text=govLabel,sub_menu=function()
-    if govList == nil then
-      govList=radical.context{}
-
-      fd_async.file.load('/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors'):connect_signal('request::completed',function(content)
-        for i,gov in pairs(content:split(" ")) do
-          print("G:",gov)
-          --Generate menu list
-          if gov:len() > 2 then
-            govList:add_item {text=gov,button1=function(_menu,item,mods)
-              for cpuI=0,data.coreN-1 do
-                print('sudo cpufreq-set -c '..cpuI..' -g '..gov)
-                awful.spawn('sudo cpufreq-set -c '..cpuI..' -g '..gov)
-                govMenu.visible = false
-              end
-            end}
-          end
+    fd_async.file.load('/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors'):connect_signal('request::completed',function(content)
+      for i,gov in pairs(content:split(" ")) do
+        print("G:",gov)
+        --Generate menu list
+        if gov:len() > 2 then
+          govList:add_item {text=gov,button1=function(_menu,item,mods)
+            for cpuI=0,data.coreN-1 do
+              print('sudo cpufreq-set -c '..cpuI..' -g '..gov)
+              awful.spawn('sudo cpufreq-set -c '..cpuI..' -g '..gov)
+              govMenu.visible = false
+            end
+          end}
         end
-      end)
-    end
-  end}
+      end
+    end)
+  end
+
+  govMenu:add_item {text=govLabel,sub_menu=govList}
 end
 
 
@@ -216,10 +217,8 @@ local function init()
   cpuInfoModule.volUsage:set_border_color ( beautiful.fg_normal                  )
   cpuInfoModule.volUsage:set_color        ( beautiful.fg_normal                  )
   vicious.register( cpuInfoModule.volUsage, vicious.widgets.cpu,refreshCoreUsage,1 )
-
   --Generate governor list
   generateGovernorMenu()
-
   print("Init Ended")
 end
 
