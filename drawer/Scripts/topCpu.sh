@@ -21,7 +21,7 @@ function testSlash {
     fi
 }
 
-for LINE in `/bin/ps -e -o pid,pcpu,args --sort -pcpu | grep -v "\[.*\]"`;do
+for LINE in `/bin/ps -e -o pid,pcpu,args --sort -pcpu | grep -v "\[.*\]"|head -n 20`;do
     PID=`echo $LINE | awk '{print $1}'`
     PERCENT=`echo $LINE | awk '{print $2}'`
     COMMAND=`echo $LINE | awk '{ for (i=3; i<=NF; i++) printf("%s ", $i);}'`

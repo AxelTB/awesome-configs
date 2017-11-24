@@ -99,7 +99,7 @@ local function refresh_process()
         end
         wdg.kill          = wibox.widget.imagebox()
         wdg.kill:set_image(config.iconPath .. "kill.png")
-        wdg.kill:buttons(button({ }, 1, function (geo) awful.spawn("kill "..process[i][1]) print("kill "..process[i][1]) end))
+        wdg.kill:buttons(button({ }, 1, function (geo) awful.spawn("kill "..process[i][1]) print("kill "..process[i][1]) cpuInfoModule.toggle() end))
 
         --Show process and cpu load
         wdg.percent:set_text((process[i][2] or "N/A").."%")
@@ -201,9 +201,6 @@ local function init()
   cpuWidgetArrayL:set_widget(tab)
 
   --Load Cpu model
-  --local pipeIn = io.popen('cat /proc/cpuinfo | grep "model name" | cut -d ":" -f2 | head -n 1',"r")
-  --local cpuName = pipeIn:read("*all") or "N/A"
-  --pipeIn:close()
   cpuModel:set_text("Loading...")
   fd_async.exec.command(util.getdir("config")..'/drawer/Scripts/cpuName.sh'):connect_signal('request::completed',function(content)
       cpuModel:set_text(content)
@@ -265,9 +262,10 @@ cpuInfoModule.refresh=function()
 end
 
 cpuInfoModule.toggle=function(parent_widget)
-  --Create menu at first load
+
   print("Toggle")
 
+  --Create menu at first load===================================================
   if not cpuInfoModule.menu then
     procMenu = embed({max_items=6})
     init()
@@ -286,12 +284,14 @@ cpuInfoModule.toggle=function(parent_widget)
     cpuInfoModule.menu:add_widget(radical.widgets.header(cpuInfoModule.menu,"PROCESS",{suffix_widget=imb}) , {height = 20  , width = 200})
     cpuInfoModule.menu:add_embeded_menu(procMenu)
   end
+
   --If opening refresh
   if not cpuInfoModule.menu.visible then
     cpuInfoModule.refresh()
+    print("CPUInfo: open")
   end
   --         cpuInfoModule.menu.visible = visibility or (not cpuInfoModule.menu.visible)
-  return cpuInfoModule.menu--.visible
+  return cpuInfoModule.menu
 end
 
 return setmetatable(cpuInfoModule, { __call = function(_, ...) return new(...) end })
