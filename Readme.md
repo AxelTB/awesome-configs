@@ -1,3 +1,8 @@
+#Awesome config
+
+##TODO:
+5 - Personal.lua include standard software config (Editor, file manager...)
+
 #Awesome radical drawer widgets Cpu, Memory, Network Sound and Date widget for radical.
 
 To be used inside https://github.com/Elv13/awesome-configs
