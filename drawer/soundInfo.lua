@@ -1,3 +1,7 @@
+--[[
+TODO:
+  8 - function set_height is deprecated. Use a `wibox.container.constraint` widget or `forced_height`
+]]--
 local setmetatable = setmetatable
 local tonumber = tonumber
 local io = io
@@ -6,7 +10,7 @@ local print = print
 local button = require("awful.button")
 local vicious = require("extern.vicious")
 local wibox = require("wibox")
-local widget2 = require("awful.widget")
+local widget2 = require("wibox.widget")
 local config = require("forgotten")
 local beautiful = require("beautiful")
 local util = require("awful.util")
@@ -40,8 +44,8 @@ function addVolumeDevice(mainMenu,name,aVolume,isMute,commArgs)
     else icon:set_image(config.iconPath .. "vol3.png") end
 
     local volume = widget2.progressbar()
-    volume:set_width(80)
-    volume:set_height(20)
+    --volume:set_width(80)
+    --volume:set_height(20)
     volume:set_background_color(beautiful.bg_normal)
     volume:set_border_color(beautiful.fg_normal)
     volume:set_color(beautiful.fg_normal)
@@ -51,29 +55,29 @@ function addVolumeDevice(mainMenu,name,aVolume,isMute,commArgs)
     end
 
     --Add line and set scroll volume control
---     mainMenu:add_item({text=name,prefix_widget=icon,suffix_widget=volume,
---             button3=function(geo,parent)
---                 --Toggle mute
---                 isMute = not isMute
---                 if isMute then icon:set_image(config.iconPath .. "volm.png")
---                 else icon:set_image(config.iconPath .. "vol3.png") end
---                 moduleSound.itemToggleMute(commArgs)
---                 --AXTODO: toggle mute
---             end,
---             button4=function(geo,parent) 
---                 aVolume=aVolume+0.02
---                 if aVolume>1 then aVolume=1 end
---                 volume:set_value(aVolume)
---                 volume:emit_signal("widget::updated")
---                 moduleSound.itemScrollUp(commArgs)
---             end,
---             button5=function(geo,parent)
---                 aVolume=aVolume-0.02
---                 if aVolume<0 then aVolume=0 end
---                 volume:set_value(aVolume)
---                 volume:emit_signal("widget::updated")
---                 moduleSound.itemScrollDown(commArgs)
---             end})
+     mainMenu:add_item({text=name,prefix_widget=icon,suffix_widget=volume,
+             button3=function(geo,parent)
+                 --Toggle mute
+                 isMute = not isMute
+                 if isMute then icon:set_image(config.iconPath .. "volm.png")
+                 else icon:set_image(config.iconPath .. "vol3.png") end
+                 moduleSound.itemToggleMute(commArgs)
+                 --AXTODO: toggle mute
+             end,
+             button4=function(geo,parent)
+                 aVolume=aVolume+0.02
+                 if aVolume>1 then aVolume=1 end
+                 volume:set_value(aVolume)
+                 volume:emit_signal("widget::updated")
+                 moduleSound.itemScrollUp(commArgs)
+             end,
+             button5=function(geo,parent)
+                 aVolume=aVolume-0.02
+                 if aVolume<0 then aVolume=0 end
+                 volume:set_value(aVolume)
+                 volume:emit_signal("widget::updated")
+                 moduleSound.itemScrollDown(commArgs)
+             end})
 end
 
 
@@ -110,7 +114,7 @@ local function new(mywibox3,args)
 
 
     --Functions------------------------------------------------------------------------
-    if mode == "alsa" then 
+    if mode == "alsa" then
         -- Alsa mode functions-----------------------------------
         moduleSound.itemScrollUp=function(devId)
             util.spawn_with_shell("amixer sset "..devId.." 2%+ >/dev/null")
@@ -167,6 +171,7 @@ local function new(mywibox3,args)
             --Parse pactl stuff
             local pipe=io.popen("pactl list sinks| awk -f "..util.getdir("config").."/drawer/Scripts/parsePactl.awk")
             for line in pipe:lines() do
+              print("L:",line)
                 local data=string.split(line,";")
                 if #data>=5 then
                     aVolume=tonumber(data[3]:match("%d+") or 0)/100

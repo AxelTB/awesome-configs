@@ -43,7 +43,8 @@ function xephyr_pid()
 
 case "$1" in
   start)
-    $xephyr -ac -br -noreset -screen 800x600 :1 &
+    #$xephyr -ac -br -noreset -screen 800x600 :1 &
+    $xephyr -ac -br -noreset -screen 1024x768 :1 &
     sleep 1
     DISPLAY=:1.0 $awesome -c $rc_lua &
     sleep 1
