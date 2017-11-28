@@ -14,6 +14,7 @@ local widget2 = require("wibox.widget")
 local config = require("forgotten")
 local beautiful = require("beautiful")
 local util = require("awful.util")
+local awful = require("awful")
 local radical      = require( "radical"                  )
 local allinone = require("widgets.allinone")
 local capi = { screen = screen, mouse = mouse}
@@ -117,13 +118,13 @@ local function new(mywibox3,args)
     if mode == "alsa" then
         -- Alsa mode functions-----------------------------------
         moduleSound.itemScrollUp=function(devId)
-            util.spawn_with_shell("amixer sset "..devId.." 2%+ >/dev/null")
+            awful.spawn.with_shell("amixer sset "..devId.." 2%+ >/dev/null")
         end
         moduleSound.itemScrollDown=function(devId)
-            util.spawn_with_shell("amixer sset "..devId.." 2%- >/dev/null")
+            awful.spawn.with_shell("amixer sset "..devId.." 2%- >/dev/null")
         end
         moduleSound.itemToggleMute=function(devId)
-            util.spawn_with_shell("amixer set "..devId.." 1+ toggle 2%+ >/dev/null")
+            awful.spawn.with_shell("amixer set "..devId.." 1+ toggle 2%+ >/dev/null")
             --print("pactl set-"..dev.type.."-mute "..dev.id.." toggle")
         end
         moduleSound.drawMenu=function()
@@ -151,16 +152,16 @@ local function new(mywibox3,args)
         ---------------------------------------------------------------------------------------------------------------
         --Pulseaudio mode functions------------------------------------------------------------------------------------
         moduleSound.itemScrollUp= function(dev)
-            util.spawn_with_shell("pactl set-"..dev.type.."-volume "..dev.id.." -- +2%")
-            --print("pactl set-"..dev.type.."-volume "..dev.id.." -- +2%")
+            awful.spawn.with_shell("pactl set-"..dev.type.."-volume "..dev.id.." +2%")
+            print("pactl set-"..dev.type.."-volume "..dev.id.."  '+2%'")
         end
         moduleSound.itemScrollDown=function(dev)
-            util.spawn_with_shell("pactl set-"..dev.type.."-volume "..dev.id.." -- -2%")
-            --print("pactl set-"..dev.type.."-volume "..dev.id.." -- -2%")
+            awful.spawn.with_shell("pactl set-"..dev.type.."-volume "..dev.id.." -2%")
+            print("pactl set-"..dev.type.."-volume "..dev.id.." -2%")
         end
         moduleSound.itemToggleMute=function(dev)
-            util.spawn_with_shell("pactl set-"..dev.type.."-mute "..dev.id.." toggle")
-            --print("pactl set-"..dev.type.."-mute "..dev.id.." toggle")
+            awful.spawn.with_shell("pactl set-"..dev.type.."-mute "..dev.id.." toggle")
+            print("pactl set-"..dev.type.."-mute "..dev.id.." toggle")
         end
         -- Menu drawer for pulseaudio
         moduleSound.drawMenu=function()
