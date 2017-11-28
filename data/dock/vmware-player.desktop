@@ -1,11 +1,13 @@
-Categories=Emulator;
+Categories=System;
 Type=Application
 Comment=Run a virtual machine
+Icon_orig=vmware-player
 Class=vmplayer
 orig=vmware-player
 StartupNotify=true
 Name=VMware Player
-MimeType=application/x-vmware-vm;application/x-vmware-enc-vm;x-scheme-handler/vmrc;
-Exec=/usr/bin/vmplayer %u
 Terminal=false
 Encoding=UTF-8
+Exec=/usr/bin/vmplayer %u
+Icon=vmware-player
+MimeType=application/x-vmware-vm;application/x-vmware-enc-vm;x-scheme-handler/vmrc;

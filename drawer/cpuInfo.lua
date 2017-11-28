@@ -264,6 +264,7 @@ end
 cpuInfoModule.toggle=function(parent_widget)
 
   print("Toggle")
+  --if govMenu.visible then print("Gov menu open") govMenu.visible=not govMenu.visible end
 
   --Create menu at first load===================================================
   if not cpuInfoModule.menu then
