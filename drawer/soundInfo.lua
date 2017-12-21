@@ -45,8 +45,8 @@ function addVolumeDevice(mainMenu,name,aVolume,isMute,commArgs)
     else icon:set_image(config.iconPath .. "vol3.png") end
 
     local volume = widget2.progressbar()
-    --volume:set_width(80)
-    --volume:set_height(20)
+    volume:set_width(80)
+    volume:set_height(20)
     volume:set_background_color(beautiful.bg_normal)
     volume:set_border_color(beautiful.fg_normal)
     volume:set_color(beautiful.fg_normal)
@@ -130,7 +130,7 @@ local function new(mywibox3,args)
         moduleSound.drawMenu=function()
             local mainMenu=  radical.context({width=200,arrow_type=radical.base.arrow_type.CENTERED})
             --Add menu header
---             mainMenu:add_widget(radical.widgets.header(mainMenu,"OUT")  , {height = 20  , width = 200})
+             mainMenu:add_widget(radical.widgets.header(mainMenu,"OUT")  , {height = 20  , width = 200})
 
             --Parse Devices names
             local pipe = io.popen("amixer 2%+ >/dev/null | awk -f "..util.getdir("config").."/drawer/Scripts/parseAlsa.awk")
@@ -168,7 +168,7 @@ local function new(mywibox3,args)
             local mainMenu,aVolume,data,isMute
             mainMenu=  radical.context({width=300,arrow_type=radical.base.arrow_type.CENTERED})
             --Add header
---             mainMenu:add_widget(radical.widgets.header(mainMenu,"OUT")  , {height = 20  , width = 200})
+             mainMenu:add_widget(radical.widgets.header(mainMenu,"OUT")  , {height = 20  , width = 200})
             --Parse pactl stuff
             local pipe=io.popen("pactl list sinks| awk -f "..util.getdir("config").."/drawer/Scripts/parsePactl.awk")
             for line in pipe:lines() do
