@@ -1,3 +1,7 @@
+--[[
+TODO:
+  8 - function set_height is deprecated. Use a `wibox.container.constraint` widget or `forced_height`
+]]--
 local setmetatable = setmetatable
 local tonumber = tonumber
 local io = io
@@ -6,10 +10,11 @@ local print = print
 local button = require("awful.button")
 local vicious = require("extern.vicious")
 local wibox = require("wibox")
-local widget2 = require("awful.widget")
+local widget2 = require("wibox.widget")
 local config = require("forgotten")
 local beautiful = require("beautiful")
 local util = require("awful.util")
+local awful = require("awful")
 local radical      = require( "radical"                  )
 local allinone = require("widgets.allinone")
 local capi = { screen = screen, mouse = mouse}
@@ -51,29 +56,29 @@ function addVolumeDevice(mainMenu,name,aVolume,isMute,commArgs)
     end
 
     --Add line and set scroll volume control
---     mainMenu:add_item({text=name,prefix_widget=icon,suffix_widget=volume,
---             button3=function(geo,parent)
---                 --Toggle mute
---                 isMute = not isMute
---                 if isMute then icon:set_image(config.iconPath .. "volm.png")
---                 else icon:set_image(config.iconPath .. "vol3.png") end
---                 moduleSound.itemToggleMute(commArgs)
---                 --AXTODO: toggle mute
---             end,
---             button4=function(geo,parent) 
---                 aVolume=aVolume+0.02
---                 if aVolume>1 then aVolume=1 end
---                 volume:set_value(aVolume)
---                 volume:emit_signal("widget::updated")
---                 moduleSound.itemScrollUp(commArgs)
---             end,
---             button5=function(geo,parent)
---                 aVolume=aVolume-0.02
---                 if aVolume<0 then aVolume=0 end
---                 volume:set_value(aVolume)
---                 volume:emit_signal("widget::updated")
---                 moduleSound.itemScrollDown(commArgs)
---             end})
+     mainMenu:add_item({text=name,prefix_widget=icon,suffix_widget=volume,
+             button3=function(geo,parent)
+                 --Toggle mute
+                 isMute = not isMute
+                 if isMute then icon:set_image(config.iconPath .. "volm.png")
+                 else icon:set_image(config.iconPath .. "vol3.png") end
+                 moduleSound.itemToggleMute(commArgs)
+                 --AXTODO: toggle mute
+             end,
+             button4=function(geo,parent)
+                 aVolume=aVolume+0.02
+                 if aVolume>1 then aVolume=1 end
+                 volume:set_value(aVolume)
+                 volume:emit_signal("widget::updated")
+                 moduleSound.itemScrollUp(commArgs)
+             end,
+             button5=function(geo,parent)
+                 aVolume=aVolume-0.02
+                 if aVolume<0 then aVolume=0 end
+                 volume:set_value(aVolume)
+                 volume:emit_signal("widget::updated")
+                 moduleSound.itemScrollDown(commArgs)
+             end})
 end
 
 
@@ -110,22 +115,22 @@ local function new(mywibox3,args)
 
 
     --Functions------------------------------------------------------------------------
-    if mode == "alsa" then 
+    if mode == "alsa" then
         -- Alsa mode functions-----------------------------------
         moduleSound.itemScrollUp=function(devId)
-            util.spawn_with_shell("amixer sset "..devId.." 2%+ >/dev/null")
+            awful.spawn.with_shell("amixer sset "..devId.." 2%+ >/dev/null")
         end
         moduleSound.itemScrollDown=function(devId)
-            util.spawn_with_shell("amixer sset "..devId.." 2%- >/dev/null")
+            awful.spawn.with_shell("amixer sset "..devId.." 2%- >/dev/null")
         end
         moduleSound.itemToggleMute=function(devId)
-            util.spawn_with_shell("amixer set "..devId.." 1+ toggle 2%+ >/dev/null")
+            awful.spawn.with_shell("amixer set "..devId.." 1+ toggle 2%+ >/dev/null")
             --print("pactl set-"..dev.type.."-mute "..dev.id.." toggle")
         end
         moduleSound.drawMenu=function()
             local mainMenu=  radical.context({width=200,arrow_type=radical.base.arrow_type.CENTERED})
             --Add menu header
---             mainMenu:add_widget(radical.widgets.header(mainMenu,"OUT")  , {height = 20  , width = 200})
+             mainMenu:add_widget(radical.widgets.header(mainMenu,"OUT")  , {height = 20  , width = 200})
 
             --Parse Devices names
             local pipe = io.popen("amixer 2%+ >/dev/null | awk -f "..util.getdir("config").."/drawer/Scripts/parseAlsa.awk")
@@ -147,26 +152,27 @@ local function new(mywibox3,args)
         ---------------------------------------------------------------------------------------------------------------
         --Pulseaudio mode functions------------------------------------------------------------------------------------
         moduleSound.itemScrollUp= function(dev)
-            util.spawn_with_shell("pactl set-"..dev.type.."-volume "..dev.id.." -- +2%")
-            --print("pactl set-"..dev.type.."-volume "..dev.id.." -- +2%")
+            awful.spawn.with_shell("pactl set-"..dev.type.."-volume "..dev.id.." +2%")
+            print("pactl set-"..dev.type.."-volume "..dev.id.."  '+2%'")
         end
         moduleSound.itemScrollDown=function(dev)
-            util.spawn_with_shell("pactl set-"..dev.type.."-volume "..dev.id.." -- -2%")
-            --print("pactl set-"..dev.type.."-volume "..dev.id.." -- -2%")
+            awful.spawn.with_shell("pactl set-"..dev.type.."-volume "..dev.id.." -2%")
+            print("pactl set-"..dev.type.."-volume "..dev.id.." -2%")
         end
         moduleSound.itemToggleMute=function(dev)
-            util.spawn_with_shell("pactl set-"..dev.type.."-mute "..dev.id.." toggle")
-            --print("pactl set-"..dev.type.."-mute "..dev.id.." toggle")
+            awful.spawn.with_shell("pactl set-"..dev.type.."-mute "..dev.id.." toggle")
+            print("pactl set-"..dev.type.."-mute "..dev.id.." toggle")
         end
         -- Menu drawer for pulseaudio
         moduleSound.drawMenu=function()
             local mainMenu,aVolume,data,isMute
             mainMenu=  radical.context({width=300,arrow_type=radical.base.arrow_type.CENTERED})
             --Add header
---             mainMenu:add_widget(radical.widgets.header(mainMenu,"OUT")  , {height = 20  , width = 200})
+             mainMenu:add_widget(radical.widgets.header(mainMenu,"OUT")  , {height = 20  , width = 200})
             --Parse pactl stuff
             local pipe=io.popen("pactl list sinks| awk -f "..util.getdir("config").."/drawer/Scripts/parsePactl.awk")
             for line in pipe:lines() do
+              print("L:",line)
                 local data=string.split(line,";")
                 if #data>=5 then
                     aVolume=tonumber(data[3]:match("%d+") or 0)/100

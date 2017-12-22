@@ -1,10 +1,10 @@
 local awful = require("awful")
 
 return {
-  runOnce={"nm-applet","urxvtd -q -f -o","xscreensaver -nosplash","skypeforlinux"},
+  runOnce={"nm-applet","urxvtd -q -f -o","xscreensaver -nosplash","skypeforlinux","google-chrome http://172.20.1.30:3542/gui"},
   terminal="mate-terminal",
   -- Random background path
-  --backgroundPath = os.getenv("HOME").."/wallpapers/",
+  backgroundPath = os.getenv("HOME").."/wallpapers/",
   --terminal = 'mate-terminal',
   --modkey = 'Mod4',
   editor = 'gedit',
